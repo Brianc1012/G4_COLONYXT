@@ -1,0 +1,121 @@
+# === OrangeHRM Custom Development .gitignore ===
+# Track only your customizations, ignore everything else
+
+# Ignore EVERYTHING by default
+/*
+
+# === ALLOW: Your Custom Development Files ===
+
+# Create directory structure
+!src/
+src/*
+!src/client/
+src/client/*
+!src/plugins/
+
+# Frontend customizations
+!src/client/src/
+!src/client/public/
+!src/client/scripts/
+
+# Allow all frontend source files (you'll customize plugins)
+!src/client/src/**
+
+# Backend customizations
+!src/plugins/**
+
+# Configuration files
+!.gitignore
+!README.md
+!composer.json
+!package.json
+
+# === EXPLICITLY IGNORE: Build/Generated/Dependency Files ===
+
+# Dependencies
+src/vendor/
+src/client/node_modules/
+src/client/.yarn/
+vendor/
+node_modules/
+
+# Build outputs
+src/client/dist/
+src/client/build/
+build/
+dist/
+
+# Cache and logs
+src/cache/
+src/log/
+var/cache/
+var/log/
+var/sessions/
+*.log
+
+# Environment and config files (sensitive)
+.env
+.env.local
+.env.*.local
+src/conf/Conf.php
+installer/cli_install_config.yaml
+
+# Generated files
+src/client/yarn.lock
+src/client/package-lock.json
+composer.lock
+
+# Web uploads and runtime files
+web/uploads/
+web/cache/
+!web/uploads/.htaccess
+
+# Database files
+*.sql
+*.db
+*.sqlite
+
+# IDE and system files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# OS generated files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Test files
+coverage/
+.nyc_output/
+.coverage/
+
+# PHP specific
+.phpunit.result.cache
+phpunit.xml
+.php_cs.cache
+
+# Symfony specific
+var/
+symfony/cache/
+symfony/log/
+
+# Webpack/Build tools
+.cache/
+.parcel-cache/
+
+# Lock files (regenerated)
+*.lock
+
+# === END ===

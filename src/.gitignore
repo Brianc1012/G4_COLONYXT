@@ -1,0 +1,93 @@
+# # === OrangeHRM Specific ===
+# # Configuration files (sensitive)
+src/conf/Conf.php
+installer/cli_install_config.yaml
+bin/*
+build/*
+installer/*
+lib/*
+web/*
+.htaccess.php-cs-fixer.dist.php
+index.php
+LICENSE
+phpunit.xml
+SECURITY.md
+
+#SRC ignore
+src/cache/*
+src/config/*
+src/lib/*
+src/log/*
+src/vendor/*
+src/composer.json
+src/composer.lock
+#client
+src/client/.yarn/*
+src/client/node_modules/*
+src/client/config/*
+src/client/.browserslistrc
+src/client/.eslintrc.js
+src/client/.prettierc.js
+src/client/.yarnrc.yml
+src/client/babel.config.js
+src/client/jest.config.js
+src/client/package.json
+src/client/tsconfig.json
+src/client/vue.config.js
+src/client/yarn.lock
+
+#web
+web/*
+
+# # Cache and logs
+src/cache/*
+src/log/*
+var/cache/*
+var/logs/*
+var/sessions/*
+
+# Vendor dependencies
+vendor/
+src/vendor/
+src/client/node_modules/
+src/client/.yarn
+
+# # Build artifacts
+ src/client/dist/
+ src/client/build/
+ build/
+ dist/
+
+# Environment files
+ .env
+ .env.local
+ .env.*.local
+
+# # Uploads and user content
+web/uploads/*
+!web/uploads/.htaccess
+
+# # Database files
+ *.sql
+ *.db
+ *.sqlite
+
+# # PHP logs
+ *.log
+
+# === General ===
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.temp
+
+# === IDE & Editor Files ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === System Files ===
+ehthumbs.db
+Desktop.ini
