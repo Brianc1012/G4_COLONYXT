@@ -21,6 +21,7 @@
   <oxd-grid class="orangehrm-dashboard-grid" :cols="3">
     <!-- Birthday Widget - Added at the top -->
     <oxd-grid-item
+      v-if="isBirthdayToday"
       class="orangehrm-dashboard-widget orangehrm-birthday-widget-container"
     >
       <birthday-greetings-widget></birthday-greetings-widget>
@@ -93,6 +94,17 @@ export default {
     'employee-attendance-widget': EmployeeAttendanceWidget,
     'birthday-greetings-widget': BirthdayGreetingsWidget,
     'offboarding-analytics-widget': OffboardingAnalyticsWidget,
+  },
+
+  computed: {
+    isBirthdayToday() {
+      const today = new Date();
+      const todayMonth = today.getMonth() + 1;
+      const todayDate = today.getDate();
+
+      // Demo: Show birthday widget on August 10th
+      return todayMonth === 8 && todayDate === 10;
+    },
   },
   mounted() {
     const http = new APIService(window.appGlobal.baseUrl, '/events/push');
