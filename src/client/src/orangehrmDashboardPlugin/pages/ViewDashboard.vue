@@ -102,7 +102,7 @@ export default {
       const todayMonth = today.getMonth() + 1;
       const todayDate = today.getDate();
 
-      // Demo: Show birthday widget on August 10th //replace this with fetching birthday
+      // Demo: Show birthday widget on August 10th //replace this with fetching birthday //nakakapagpabagabag
       return todayMonth === 8 && todayDate === 10;
     },
   },
