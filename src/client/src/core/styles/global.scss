@@ -1,3 +1,23 @@
+/* Make all date picker inputs read-only */
+input[type="date"],
+.oxd-date-input input,
+.oxd-input--date input {
+  pointer-events: none !important;
+  cursor: pointer !important;
+  caret-color: transparent !important;
+}
+
+/* Allow clicking on the date picker icon */
+.oxd-date-input .oxd-date-input-icon,
+.oxd-input-group__label-wrapper,
+.oxd-icon {
+  pointer-events: auto !important;
+}
+
+/* Enable date picker on click */
+input[type="date"]:focus {
+  pointer-events: auto !important;
+}
 
 .orangehrm-header-container,
 .orangehrm-dialog-header-container {
