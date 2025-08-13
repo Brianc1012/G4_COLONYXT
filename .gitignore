@@ -1,0 +1,12 @@
+# Generated config after installation
+lib/confs/Conf.php
+
+# Doctrine caches
+src/cache/doctrine_metadata/
+src/cache/doctrine_queries/
+
+# OrangeHRM caches
+src/cache/orangehrm/
+
+# Installer logs
+src/log/installer.log
