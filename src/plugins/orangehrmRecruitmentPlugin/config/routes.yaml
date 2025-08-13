@@ -81,6 +81,20 @@ apiv2_recruitment_hiring_managers:
   defaults:
     _api: OrangeHRM\Recruitment\Api\HiringManagerAPI
 
+apiv2_recruitment_candidates_bulk_upload:
+  path: /api/v2/recruitment/candidates/bulk-upload
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ POST ]
+  defaults:
+    _api: OrangeHRM\Recruitment\Api\CandidateBulkUploadAPI
+
+apiv2_recruitment_candidates_bulk_template:
+  path: /api/v2/recruitment/candidates/bulk-template
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ GET ]
+  defaults:
+    _api: OrangeHRM\Recruitment\Api\CandidateBulkUploadAPI
+
 apiv2_recruitment_candidates_allowed_actions:
   path: /api/v2/recruitment/candidates/{candidateId}/actions/allowed
   controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
@@ -249,6 +263,11 @@ recruitment_edit_job_vacancy:
 recruitment_view_candidates:
   path: /recruitment/viewCandidates
   controller: OrangeHRM\Recruitment\Controller\ViewCandidateController::handle
+  methods: [ GET ]
+
+recruitment_bulk_upload_candidates:
+  path: /recruitment/bulkUploadCandidates
+  controller: OrangeHRM\Recruitment\Controller\BulkUploadCandidatesController::handle
   methods: [ GET ]
 
 recruitment_save_candidates:

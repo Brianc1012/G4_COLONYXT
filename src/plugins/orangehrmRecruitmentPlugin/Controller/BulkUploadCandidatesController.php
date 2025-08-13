@@ -16,33 +16,24 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace OrangeHRM\Core\Report\DisplayField\License;
+namespace OrangeHRM\Recruitment\Controller;
 
-use OrangeHRM\Core\Report\DisplayField\ListableDisplayField;
+use OrangeHRM\Core\Controller\AbstractVueController;
+use OrangeHRM\Core\Traits\Controller\VueComponentPermissionTrait;
+use OrangeHRM\Core\Vue\Component;
+use OrangeHRM\Framework\Http\Request;
 
-class License extends ListableDisplayField
+class BulkUploadCandidatesController extends AbstractVueController
 {
-    /**
-     * @inheritDoc
-     */
-    public function getDtoClass(): string
-    {
-        return Dto\License::class;
-    }
+    use VueComponentPermissionTrait;
 
     /**
      * @inheritDoc
      */
-    public function getEntityAliases(): array
+    public function preRender(Request $request): void
     {
-        return ['license'];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getFields(): array
-    {
-        return ['employee.empNumber'];
+        $component = new Component('bulk-upload-candidates');
+        $this->setComponent($component);
+        $this->setPermissions(['recruitment_candidates']);
     }
 }

@@ -110,6 +110,12 @@
           display-type="secondary"
           @click="onClickAdd"
         />
+        <oxd-button
+          :label="$t('general.bulk_upload')"
+          icon-name="upload"
+          display-type="ghost"
+          @click="onClickBulkUpload"
+        />
       </div>
       <table-header
         :selected="checkedItems.length"
@@ -422,6 +428,9 @@ export default {
     },
     onClickAdd() {
       navigate('/recruitment/addCandidate');
+    },
+    onClickBulkUpload() {
+      navigate('/recruitment/bulkUploadCandidates');
     },
     onClickEdit(item) {
       navigate('/recruitment/addCandidate/{id}', {id: item.id});

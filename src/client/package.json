@@ -7,7 +7,8 @@
     "dev": "vue-cli-service build --watch --mode development --dest ../../web/dist",
     "build": "vue-cli-service build --dest ../../web/dist",
     "test:unit": "vue-cli-service test:unit",
-    "lint": "vue-cli-service lint --max-warnings=0 --mode production"
+    "lint": "vue-cli-service lint --max-warnings=0 --mode production",
+    "lint:fix": "vue-cli-service lint --fix"
   },
   "dependencies": {
     "@ohrm/oxd": "2.0.3",
@@ -33,7 +34,7 @@
     "@vue/test-utils": "^2.4.4",
     "@vue/vue3-jest": "^27.0.0",
     "babel-jest": "^27.5.1",
-    "eslint": "^7.32.0",
+    "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-vue": "^8.7.1",

@@ -19,6 +19,14 @@
 
 <template>
   <oxd-grid class="orangehrm-dashboard-grid" :cols="3">
+    <!-- Birthday Widget - Added at the top -->
+    <oxd-grid-item
+      v-if="isBirthdayToday"
+      class="orangehrm-dashboard-widget orangehrm-birthday-widget-container"
+    >
+      <birthday-greetings-widget></birthday-greetings-widget>
+    </oxd-grid-item>
+
     <oxd-grid-item
       v-if="$can.read('dashboard_time_widget')"
       class="orangehrm-dashboard-widget"
@@ -55,6 +63,11 @@
     >
       <employee-location-widget></employee-location-widget>
     </oxd-grid-item>
+
+    <!-- Offboarding Analytics Widget -->
+    <oxd-grid-item class="orangehrm-dashboard-widget">
+      <offboarding-analytics-widget></offboarding-analytics-widget>
+    </oxd-grid-item>
   </oxd-grid>
 </template>
 
@@ -67,6 +80,8 @@ import MyActionSummaryWidget from '@/orangehrmDashboardPlugin/components/MyActio
 import EmployeeLocationWidget from '@/orangehrmDashboardPlugin/components/EmployeeLocationWidget.vue';
 import EmployeesOnLeaveWidget from '@/orangehrmDashboardPlugin/components/EmployeesOnLeaveWidget.vue';
 import EmployeeAttendanceWidget from '@/orangehrmDashboardPlugin/components/EmployeeAttendanceWidget.vue';
+import BirthdayGreetingsWidget from '@/orangehrmDashboardPlugin/components/BirthdayGreetingsWidget.vue';
+import OffboardingAnalyticsWidget from '@/orangehrmDashboardPlugin/components/OffboardingAnalyticsWidget.vue';
 
 export default {
   components: {
@@ -77,6 +92,19 @@ export default {
     'employee-location-widget': EmployeeLocationWidget,
     'employees-on-leave-widget': EmployeesOnLeaveWidget,
     'employee-attendance-widget': EmployeeAttendanceWidget,
+    'birthday-greetings-widget': BirthdayGreetingsWidget,
+    'offboarding-analytics-widget': OffboardingAnalyticsWidget,
+  },
+
+  computed: {
+    isBirthdayToday() {
+      const today = new Date();
+      const todayMonth = today.getMonth() + 1;
+      const todayDate = today.getDate();
+
+      // Demo: Show birthday widget on August 10th //replace this with fetching birthday //nakakapagpabagabag
+      return todayMonth === 8 && todayDate === 10;
+    },
   },
   mounted() {
     const http = new APIService(window.appGlobal.baseUrl, '/events/push');
@@ -91,5 +119,18 @@ export default {
   box-sizing: border-box;
   max-width: calc(350px * 3);
   grid-template-columns: repeat(auto-fill, minmax(max(320px, 100%/3), 1fr));
+}
+
+// Remove grid lines/borders for birthday widget container
+.orangehrm-birthday-widget-container {
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  box-shadow: none !important;
+
+  &::before,
+  &::after {
+    display: none !important;
+  }
 }
 </style>
