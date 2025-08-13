@@ -1,0 +1,50 @@
+On Powershell Terminal:
+    cd C:\xampp\htdocs
+    git clone --branch joel https://github.com/Brianc1012/G4_COLONYXT.git colonyxt
+    cd src/client
+    npm install -g yarn
+    yarn install
+    yarn dev
+
+On browser:
+    http://localhost/colonyxt/installer
+
+-----------------------------------------------------------------
+
+php.ini requirements:
+extension=curl
+extension=xml
+extension=zip
+extension=intl
+extension=gd or extension=gd2
+extension=ldap
+extension=openssl
+
+-----------------------------------------------------------------
+
+Database Host Name: localhost
+Database Host Port: 3306
+Database Name: orangehrm_db                         
+Previledged Database Username: root
+Previledged Database Password:
+OrangeHRM Database Username: Admin                  
+OrangeHRM Database Password: ColonyxtAdmin123.      
+
+Organization Name: Colonyxt
+Country: Philippines
+Language: en_US
+Timezone Group: Asia
+Timezone: Asia/Manila
+
+Employee First Name: Dexter                         //customizable
+Employee Last Name: Morgan                          //customizable
+Email: bus.finance.15@gmail.com                     //customizable
+Contact Number:                                     //customizable
+System Admin Username: Admin                        
+System Admin Password: ColonyxtAdmin123.            
+Register: no
+
+-----------------------------------------------------------------
+
+On browser:
+    http://localhost/colonyxt/web/index.php/auth/login
