@@ -10,3 +10,22 @@ src/cache/orangehrm/
 
 # Installer logs
 src/log/installer.log
+
+# Node.js dependencies (ignore everywhere)
+node_modules/
+
+# Yarn v2+ cache & unpacked dependencies
+**/.yarn/cache/
+**/.yarn/unplugged/
+**/.yarn/build-state.yml
+**/.pnp.*
+
+# Keep these Yarn files
+!.yarn/releases/
+!.yarn/plugins/
+!.yarn/sdks/
+!.yarn/patches/
+!.yarn/install-state.gz
+
+# Frontend build output
+web/dist/
