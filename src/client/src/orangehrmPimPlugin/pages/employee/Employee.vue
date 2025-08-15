@@ -89,6 +89,20 @@
           display-type="secondary"
           @click="onClickAdd"
         />
+        <!-- ADDED DROPDOWN EXPORT BUTTON -->
+        <oxd-text>Export as:</oxd-text>
+        <oxd-button
+          display-type="success"
+          :label="'CSV'"
+          :loading="isExporting"
+          @click="onClickExport('csv')"
+        />
+        <oxd-button
+          display-type="success"
+          :label="'PDF'"
+          :loading="isExporting"
+          @click="onClickExport('pdf')"
+        />
       </div>
       <table-header
         :selected="checkedItems.length"
@@ -125,6 +139,8 @@
 
 <script>
 import {computed, ref} from 'vue';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import DeleteConfirmationDialog from '@ohrm/components/dialogs/DeleteConfirmationDialog';
 import usePaginate from '@ohrm/core/util/composable/usePaginate';
 import {navigate} from '@ohrm/core/util/helper/navigation';
@@ -278,6 +294,12 @@ export default {
         employee: [shouldNotExceedCharLength(100)],
         supervisor: [shouldNotExceedCharLength(100), validSelection],
       },
+      isExporting: false,
+      showExportOptions: false,
+      exportOptions: [
+        {id: 'csv', label: 'Export as CSV'},
+        {id: 'pdf', label: 'Export as PDF'},
+      ],
     };
   },
   computed: {
@@ -339,6 +361,142 @@ export default {
   },
 
   methods: {
+    async onClickExport(format = 'csv') {
+      this.isExporting = true;
+      this.showExportOptions = false;
+
+      try {
+        if (!this.items?.data || this.items.data.length === 0) {
+          this.$toast.error({
+            title: 'Error',
+            message: 'No employees to export',
+          });
+          return;
+        }
+
+        if (format === 'csv') {
+          this.downloadCSV(this.items.data);
+        } else if (format === 'pdf') {
+          this.downloadPDF(this.items.data);
+        }
+
+        this.$toast.success({
+          title: 'Success',
+          message: `${
+            this.items.data.length
+          } employees exported as ${format.toUpperCase()} successfully`,
+        });
+      } catch (error) {
+        console.error('Export error:', error);
+        this.$toast.error({
+          title: 'Error',
+          message: 'Failed to export employees',
+        });
+      } finally {
+        this.isExporting = false;
+      }
+    },
+
+    // Method for dropdown selection
+    onSelectExportOption(option) {
+      this.onClickExport(option.id);
+    },
+
+    // Existing CSV download method
+    downloadCSV(employees) {
+      const headers = [
+        'Employee ID',
+        'First & Middle Name',
+        'Last Name',
+        'Job Title',
+        'Employment Status',
+        'Sub Unit',
+        'Supervisor',
+      ];
+
+      const rows = employees.map((emp) => [
+        emp.employeeId || '',
+        emp.firstAndMiddleName || '',
+        emp.lastName || '',
+        emp.jobTitle || '',
+        emp.empStatus || '',
+        emp.subunit || '',
+        emp.supervisor || '',
+      ]);
+
+      const csvContent = [headers, ...rows]
+        .map((row) => row.map((field) => `"${field}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `employees_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    },
+
+    //NEW: PDF download method
+    downloadPDF(employees) {
+      const doc = new jsPDF();
+
+      // Add title
+      doc.setFontSize(18);
+      doc.text('Employee List Report', 14, 22);
+
+      // Add date
+      doc.setFontSize(12);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
+      doc.text(`Total Employees: ${employees.length}`, 14, 42);
+
+      // Prepare table data
+      const headers = [
+        [
+          'Employee ID',
+          'First & Middle Name',
+          'Last Name',
+          'Job Title',
+          'Employment Status',
+          'Sub Unit',
+          'Supervisor',
+        ],
+      ];
+
+      const data = employees.map((emp) => [
+        emp.employeeId || '',
+        emp.firstAndMiddleName || '',
+        emp.lastName || '',
+        emp.jobTitle || '',
+        emp.empStatus || '',
+        emp.subunit || '',
+        emp.supervisor || '',
+      ]);
+
+      // Add table
+      doc.autoTable({
+        head: headers,
+        body: data,
+        startY: 50,
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+        },
+        headStyles: {
+          fillColor: [41, 128, 185],
+          textColor: 255,
+          fontStyle: 'bold',
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+        },
+      });
+
+      // Save the PDF
+      doc.save(`employees_${new Date().toISOString().split('T')[0]}.pdf`);
+    },
     onClickAdd() {
       navigate('/pim/addEmployee');
     },
@@ -356,6 +514,7 @@ export default {
         }
       });
     },
+
     onClickDelete(item, $event) {
       $event.stopImmediatePropagation();
       const isSelectable = this.unselectableEmpNumbers.findIndex(
