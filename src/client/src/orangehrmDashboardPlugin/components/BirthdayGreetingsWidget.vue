@@ -85,9 +85,9 @@ export default {
 
       // Demo: Show birthday widget on August 9th
       // In real implementation, check against user's actual birthday from profile
-      if (todayMonth === 8 && todayDate === 10) {
+      if (todayMonth === 8 && todayDate === 15) {
         this.isMyBirthday = true;
-        this.userAge = this.calculateAge('1996-08-10'); // Demo birth year
+        this.userAge = this.calculateAge('1996-08-15'); // Demo birth year
       }
 
       // Real implementation would look like:

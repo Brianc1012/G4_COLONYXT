@@ -103,7 +103,7 @@ export default {
       const todayDate = today.getDate();
 
       // Demo: Show birthday widget on August 10th //replace this with fetching birthday //nakakapagpabagabag
-      return todayMonth === 8 && todayDate === 10;
+      return todayMonth === 8 && todayDate === 15;
     },
   },
   mounted() {

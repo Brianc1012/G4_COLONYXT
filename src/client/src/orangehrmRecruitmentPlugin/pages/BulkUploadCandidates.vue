@@ -498,7 +498,7 @@ export default {
     checkDuplicates() {
       const emailMap = new Map();
 
-      this.previewData.forEach((row, index) => {
+      this.previewData.forEach((row) => {
         if (row.email) {
           if (emailMap.has(row.email)) {
             row.warnings.push(

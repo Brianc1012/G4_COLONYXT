@@ -89,20 +89,27 @@
           display-type="secondary"
           @click="onClickAdd"
         />
-        <!-- ADDED DROPDOWN EXPORT BUTTON -->
-        <oxd-text>Export as:</oxd-text>
-        <oxd-button
-          display-type="success"
-          :label="'CSV'"
-          :loading="isExporting"
-          @click="onClickExport('csv')"
-        />
-        <oxd-button
-          display-type="success"
-          :label="'PDF'"
-          :loading="isExporting"
-          @click="onClickExport('pdf')"
-        />
+
+        <!-- EXPORT DROPDOWN -->
+        <div ref="exportDropdown" class="export-dropdown-container">
+          <oxd-button
+            display-type="success"
+            :label="'Export'"
+            icon-name="download"
+            :loading="isExporting"
+            @click="toggleExportDropdown"
+          />
+          <div v-if="showExportDropdown" class="export-dropdown-menu">
+            <div class="export-dropdown-item" @click="onClickExport('csv')">
+              <oxd-icon name="file-text" />
+              <span>Export as CSV</span>
+            </div>
+            <div class="export-dropdown-item" @click="onClickExport('pdf')">
+              <oxd-icon name="file-pdf" />
+              <span>Export as PDF</span>
+            </div>
+          </div>
+        </div>
       </div>
       <table-header
         :selected="checkedItems.length"
@@ -140,7 +147,7 @@
 <script>
 import {computed, ref} from 'vue';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import DeleteConfirmationDialog from '@ohrm/components/dialogs/DeleteConfirmationDialog';
 import usePaginate from '@ohrm/core/util/composable/usePaginate';
 import {navigate} from '@ohrm/core/util/helper/navigation';
@@ -290,16 +297,12 @@ export default {
   data() {
     return {
       checkedItems: [],
+      isExporting: false,
+      showExportDropdown: false,
       rules: {
         employee: [shouldNotExceedCharLength(100)],
         supervisor: [shouldNotExceedCharLength(100), validSelection],
       },
-      isExporting: false,
-      showExportOptions: false,
-      exportOptions: [
-        {id: 'csv', label: 'Export as CSV'},
-        {id: 'pdf', label: 'Export as PDF'},
-      ],
     };
   },
   computed: {
@@ -360,10 +363,33 @@ export default {
     },
   },
 
+  mounted() {
+    // Close dropdown when clicking outside
+    document.addEventListener('click', this.handleClickOutside);
+  },
+
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
+  },
+
   methods: {
+    toggleExportDropdown() {
+      if (this.isExporting) return; // Don't open dropdown when exporting
+      this.showExportDropdown = !this.showExportDropdown;
+    },
+
+    handleClickOutside(event) {
+      if (
+        this.$refs.exportDropdown &&
+        !this.$refs.exportDropdown.contains(event.target)
+      ) {
+        this.showExportDropdown = false;
+      }
+    },
+
     async onClickExport(format = 'csv') {
+      this.showExportDropdown = false; // Close dropdown
       this.isExporting = true;
-      this.showExportOptions = false;
 
       try {
         if (!this.items?.data || this.items.data.length === 0) {
@@ -439,7 +465,6 @@ export default {
       window.URL.revokeObjectURL(url);
     },
 
-    //NEW: PDF download method
     downloadPDF(employees) {
       const doc = new jsPDF();
 
@@ -454,15 +479,13 @@ export default {
 
       // Prepare table data
       const headers = [
-        [
-          'Employee ID',
-          'First & Middle Name',
-          'Last Name',
-          'Job Title',
-          'Employment Status',
-          'Sub Unit',
-          'Supervisor',
-        ],
+        'Employee ID',
+        'First & Middle Name',
+        'Last Name',
+        'Job Title',
+        'Employment Status',
+        'Sub Unit',
+        'Supervisor',
       ];
 
       const data = employees.map((emp) => [
@@ -475,9 +498,9 @@ export default {
         emp.supervisor || '',
       ]);
 
-      // Add table
-      doc.autoTable({
-        head: headers,
+      // Add table using autoTable function
+      autoTable(doc, {
+        head: [headers],
         body: data,
         startY: 50,
         styles: {
@@ -492,11 +515,13 @@ export default {
         alternateRowStyles: {
           fillColor: [245, 245, 245],
         },
+        margin: {top: 50},
       });
 
       // Save the PDF
       doc.save(`employees_${new Date().toISOString().split('T')[0]}.pdf`);
     },
+
     onClickAdd() {
       navigate('/pim/addEmployee');
     },
@@ -588,3 +613,59 @@ export default {
 </script>
 
 <style src="./employee.scss" lang="scss" scoped></style>
+
+<style scoped>
+.orangehrm-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.export-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.export-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #d6d6d6;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 180px;
+  margin-top: 4px;
+}
+
+.export-dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.export-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.export-dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.export-dropdown-item span {
+  margin-left: 8px;
+  color: #333;
+}
+
+.export-dropdown-item oxd-icon {
+  color: #666;
+  width: 16px;
+  height: 16px;
+}
+</style>
