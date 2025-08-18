@@ -228,7 +228,7 @@ class ThemeService
         if ($this->getImageETag('client_logo') !== null) {
             return $request->getBaseUrl() . "/admin/theme/image/clientLogo?v=$assetsVersion";
         }
-        return $request->getBasePath() . "/images/orange.png?v=$assetsVersion";
+        return $request->getBasePath() . "/images/COLONYXT__logo.png?v=$assetsVersion";
     }
 
     /**
@@ -241,7 +241,7 @@ class ThemeService
         if ($this->getImageETag('client_banner') !== null) {
             return $request->getBaseUrl() . "/admin/theme/image/clientBanner?v=$assetsVersion";
         }
-        return $request->getBasePath() . "/images/orangehrm-logo.png?v=$assetsVersion";
+        return $request->getBasePath() . "/images/COLONYXT_Banner.png?v=$assetsVersion";
     }
 
     /**
@@ -254,6 +254,6 @@ class ThemeService
         if ($this->getImageETag('login_banner') !== null) {
             return $request->getBaseUrl() . "/admin/theme/image/loginBanner?v=$assetsVersion";
         }
-        return $request->getBasePath() . "/images/ohrm_branding.png?v=$assetsVersion";
+        return $request->getBasePath() . "/images/COLONYXT__LoginBanner.png?v=$assetsVersion";
     }
 }

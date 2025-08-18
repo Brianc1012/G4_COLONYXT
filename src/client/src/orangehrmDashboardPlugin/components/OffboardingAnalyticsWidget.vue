@@ -257,7 +257,7 @@ export default {
 .orangehrm-offboarding-number {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--oxd-primary-one-color, #ff7b1d);
+  color: var(--oxd-primary-one-color, #0b6449);
   margin-bottom: 0.25rem;
 
   &.orangehrm-turnover-rate {
@@ -279,7 +279,7 @@ export default {
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: var(--oxd-primary-one-color, #ff7b1d);
+  color: var(--oxd-primary-one-color, #0b6449);
 }
 
 .orangehrm-offboarding-recent {
@@ -290,7 +290,7 @@ export default {
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: var(--oxd-primary-one-color, #ff7b1d);
+  color: var(--oxd-primary-one-color, #0b6449);
 }
 
 .orangehrm-offboarding-list {

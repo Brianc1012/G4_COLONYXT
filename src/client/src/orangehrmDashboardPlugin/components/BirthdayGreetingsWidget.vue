@@ -85,9 +85,9 @@ export default {
 
       // Demo: Show birthday widget on August 9th
       // In real implementation, check against user's actual birthday from profile
-      if (todayMonth === 8 && todayDate === 15) {
+      if (todayMonth === 8 && todayDate === 18) {
         this.isMyBirthday = true;
-        this.userAge = this.calculateAge('1996-08-15'); // Demo birth year
+        this.userAge = this.calculateAge('1996-08-18'); // Demo birth year
       }
 
       // Real implementation would look like:
@@ -126,7 +126,7 @@ export default {
 <style lang="scss" scoped>
 .orangehrm-birthday-special {
   background: linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%);
-  border: 3px solid var(--oxd-primary-one-color, #ff7b1d);
+  border: 3px solid var(--oxd-primary-one-color, #0b6449);
   border-radius: 1rem;
   overflow: hidden;
   position: relative;
@@ -173,7 +173,7 @@ export default {
   border-radius: 1rem;
   padding: 2rem 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 2px solid var(--oxd-primary-one-color, #ff7b1d);
+  border: 2px solid var(--oxd-primary-one-color, #0b6449);
 }
 
 .orangehrm-birthday-emojis {
@@ -186,7 +186,7 @@ export default {
   .orangehrm-birthday-greeting {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--oxd-primary-one-color, #ff7b1d);
+    color: var(--oxd-primary-one-color, #0b6449);
     margin-bottom: 0.5rem;
   }
 
@@ -219,7 +219,7 @@ export default {
   position: absolute;
   width: 10px;
   height: 10px;
-  background: var(--oxd-primary-one-color, #ff7b1d);
+  background: var(--oxd-primary-one-color, #0b6449);
   animation: confetti-fall 3s infinite linear;
 
   &:nth-child(1) {
