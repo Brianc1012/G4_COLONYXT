@@ -64,8 +64,11 @@
       <employee-location-widget></employee-location-widget>
     </oxd-grid-item>
 
-    <!-- Offboarding Analytics Widget -->
-    <oxd-grid-item class="orangehrm-dashboard-widget">
+    <!-- Full-width Offboarding Analytics Widget spanning all 3 columns -->
+    <oxd-grid-item
+      class="orangehrm-dashboard-widget orangehrm-full-width-widget"
+      :span="3"
+    >
       <offboarding-analytics-widget></offboarding-analytics-widget>
     </oxd-grid-item>
   </oxd-grid>
@@ -118,7 +121,39 @@ export default {
   margin: 0 auto;
   box-sizing: border-box;
   max-width: calc(350px * 3);
-  grid-template-columns: repeat(auto-fill, minmax(max(320px, 100%/3), 1fr));
+  grid-template-columns: repeat(
+    3,
+    1fr
+  ); // Fixed 3 columns for proper span behavior
+  gap: 1rem;
+}
+
+// Full-width widget styling - spans all 3 columns
+.orangehrm-full-width-widget {
+  grid-column: 1 / -1; // Span from first to last column
+  margin-top: 1rem;
+
+  // Override BaseWidget max-width constraint
+  ::v-deep(.orangehrm-dashboard-widget) {
+    max-width: none !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  // Ensure the widget content takes full width
+  ::v-deep(.orangehrm-widget) {
+    width: 100%;
+  }
+
+  // Allow the widget body to expand
+  ::v-deep(.orangehrm-dashboard-widget-body) {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  @media (max-width: 768px) {
+    margin-top: 0.75rem;
+  }
 }
 
 // Remove grid lines/borders for birthday widget container

@@ -19,6 +19,13 @@ apiv2_dashboard_quick_launch:
   defaults:
     _api: OrangeHRM\Dashboard\Api\QuickLaunchAPI
 
+apiv2_dashboard_offboarding:
+  path: /api/v2/dashboard/offboarding
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ GET ]
+  defaults:
+    _api: OrangeHRM\Dashboard\Api\OffboardingAnalyticsAPI
+
 apiv2_dashboard_employees_by_location:
   path: /api/v2/dashboard/employees/locations
   controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
