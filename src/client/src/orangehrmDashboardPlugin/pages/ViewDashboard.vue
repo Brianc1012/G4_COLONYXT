@@ -19,12 +19,14 @@
 
 <template>
   <oxd-grid class="orangehrm-dashboard-grid" :cols="3">
-    <!-- Birthday Widget - Added at the top -->
+    <!-- Birthday Widget - Shows when user has birthday today -->
     <oxd-grid-item
-      v-if="isBirthdayToday"
+      v-if="showBirthdayWidget"
       class="orangehrm-dashboard-widget orangehrm-birthday-widget-container"
     >
-      <birthday-greetings-widget></birthday-greetings-widget>
+      <birthday-greetings-widget
+        @birthday-status="handleBirthdayStatus"
+      ></birthday-greetings-widget>
     </oxd-grid-item>
 
     <oxd-grid-item
@@ -64,8 +66,11 @@
       <employee-location-widget></employee-location-widget>
     </oxd-grid-item>
 
-    <!-- Offboarding Analytics Widget -->
-    <oxd-grid-item class="orangehrm-dashboard-widget">
+    <!-- Full-width Offboarding Analytics Widget spanning all 3 columns -->
+    <oxd-grid-item
+      class="orangehrm-dashboard-widget orangehrm-full-width-widget"
+      :span="3"
+    >
       <offboarding-analytics-widget></offboarding-analytics-widget>
     </oxd-grid-item>
   </oxd-grid>
@@ -96,19 +101,21 @@ export default {
     'offboarding-analytics-widget': OffboardingAnalyticsWidget,
   },
 
-  computed: {
-    isBirthdayToday() {
-      const today = new Date();
-      const todayMonth = today.getMonth() + 1;
-      const todayDate = today.getDate();
-
-      // Demo: Show birthday widget on August 10th //replace this with fetching birthday //nakakapagpabagabag
-      return todayMonth === 8 && todayDate === 10;
-    },
+  data() {
+    return {
+      showBirthdayWidget: true,
+    };
   },
+
   mounted() {
     const http = new APIService(window.appGlobal.baseUrl, '/events/push');
     http.create();
+  },
+
+  methods: {
+    handleBirthdayStatus(isBirthday) {
+      this.showBirthdayWidget = isBirthday;
+    },
   },
 };
 </script>
@@ -118,7 +125,39 @@ export default {
   margin: 0 auto;
   box-sizing: border-box;
   max-width: calc(350px * 3);
-  grid-template-columns: repeat(auto-fill, minmax(max(320px, 100%/3), 1fr));
+  grid-template-columns: repeat(
+    3,
+    1fr
+  ); // Fixed 3 columns for proper span behavior
+  gap: 1rem;
+}
+
+// Full-width widget styling - spans all 3 columns
+.orangehrm-full-width-widget {
+  grid-column: 1 / -1; // Span from first to last column
+  margin-top: 1rem;
+
+  // Override BaseWidget max-width constraint
+  ::v-deep(.orangehrm-dashboard-widget) {
+    max-width: none !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  // Ensure the widget content takes full width
+  ::v-deep(.orangehrm-widget) {
+    width: 100%;
+  }
+
+  // Allow the widget body to expand
+  ::v-deep(.orangehrm-dashboard-widget-body) {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  @media (max-width: 768px) {
+    margin-top: 0.75rem;
+  }
 }
 
 // Remove grid lines/borders for birthday widget container

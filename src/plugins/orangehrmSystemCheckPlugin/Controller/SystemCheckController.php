@@ -87,12 +87,12 @@ class SystemCheckController extends AbstractVueController implements PublicContr
     {
         return $this->getThemeService()->getDerivedCssVariables(
             ThemeVariables::createFromArray([
-                'primaryColor' => '#FF7B1D',
+                'primaryColor' => '#0b6449',
                 'primaryFontColor' => '#FFFFFF',
-                'secondaryColor' => '#76BC21',
+                'secondaryColor' => '#123524',  
                 'secondaryFontColor' => '#FFFFFF',
-                'primaryGradientStartColor' => '#FF920B',
-                'primaryGradientEndColor' => '#F35C17'
+                'primaryGradientStartColor' => '#16404D',
+                'primaryGradientEndColor' => '#3D8D7A'
             ])
         );
     }

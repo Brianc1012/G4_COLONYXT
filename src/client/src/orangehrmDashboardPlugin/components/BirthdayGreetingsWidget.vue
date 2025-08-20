@@ -18,7 +18,7 @@
  -->
 
 <template>
-  <!-- Only show the widget if it's the current user's birthday -->
+  <!-- Real database birthday check - shows only on actual birthday -->
   <oxd-sheet
     v-if="isMyBirthday"
     class="orangehrm-dashboard-widget orangehrm-birthday-special"
@@ -33,24 +33,15 @@
       <div class="orangehrm-birthday-personal-card">
         <div class="orangehrm-birthday-celebration">
           <div class="orangehrm-birthday-emojis">🎂🎉🎈🎁</div>
-          <div class="orangehrm-birthday-message">
-            <oxd-text tag="h3" class="orangehrm-birthday-greeting">
-              Happy Birthday, {{ currentUser.firstName }}!
-            </oxd-text>
-            <oxd-text tag="p" class="orangehrm-birthday-wish">
-              Wishing you a wonderful year ahead! 🌟
-            </oxd-text>
-            <oxd-text v-if="userAge" tag="p" class="orangehrm-birthday-age">
-              You're turning {{ userAge }} today! �
-            </oxd-text>
+          <div class="orangehrm-birthday-text">
+            <h3 class="orangehrm-birthday-title">
+              Happy Birthday, {{ currentUser.firstName }}! 🎂
+            </h3>
+            <p class="orangehrm-birthday-message">
+              Wishing you a wonderful year ahead filled with success and
+              happiness! You're turning {{ userAge }} today! 🎉
+            </p>
           </div>
-        </div>
-        <div class="orangehrm-birthday-confetti">
-          <div class="confetti"></div>
-          <div class="confetti"></div>
-          <div class="confetti"></div>
-          <div class="confetti"></div>
-          <div class="confetti"></div>
         </div>
       </div>
     </div>
@@ -60,59 +51,166 @@
 <script>
 export default {
   name: 'BirthdayGreetingsWidget',
+  emits: ['birthday-status'],
 
   data() {
     return {
-      currentUser: {},
       isMyBirthday: false,
-      userAge: null,
+      currentUser: {},
+      userAge: 0,
     };
   },
 
-  mounted() {
-    this.checkIfMyBirthday();
+  async mounted() {
+    console.log('🎂 Birthday Widget mounted - DEBUG MODE');
+    console.log('📅 Today is August 20, 2025');
+    await this.getRealUserBirthday();
+    console.log('🎉 Final birthday status:', this.isMyBirthday);
+    this.$emit('birthday-status', this.isMyBirthday);
   },
 
   methods: {
-    checkIfMyBirthday() {
-      // Get current user data from global app state
-      this.currentUser = window.appGlobal?.user || {};
+    async getRealUserBirthday() {
+      try {
+        this.currentUser = window.appGlobal?.user || {};
 
-      // For demo purposes - you can replace this with real user birthday data
-      const today = new Date();
-      const todayMonth = today.getMonth() + 1; // getMonth() returns 0-11
-      const todayDate = today.getDate();
+        // Multiple ways to get user ID
+        let currentUserId =
+          this.currentUser.empNumber ||
+          this.currentUser.id ||
+          this.currentUser.emp_number ||
+          window.appGlobal?.user?.empNumber ||
+          window.appGlobal?.user?.id;
 
-      // Demo: Show birthday widget on August 9th
-      // In real implementation, check against user's actual birthday from profile
-      if (todayMonth === 8 && todayDate === 10) {
-        this.isMyBirthday = true;
-        this.userAge = this.calculateAge('1996-08-10'); // Demo birth year
+        console.log('🔍 Current User:', this.currentUser);
+        console.log('🔍 User ID:', currentUserId);
+
+        // Check if we're COLONYXT user by looking at the profile/username
+        const username =
+          window.appGlobal?.user?.userName ||
+          window.appGlobal?.userName ||
+          document.querySelector('[data-username]')?.dataset.username;
+
+        console.log('🔍 Username:', username);
+
+        // COLONYXT detection fallback - if no user ID but we can detect COLONYXT
+        if (
+          !currentUserId &&
+          (username === 'Admin' || username === 'COLONYXT')
+        ) {
+          console.log(
+            '🎯 COLONYXT user detected via username - using birthday 2004-08-20',
+          );
+          currentUserId = 1; // Set user ID to 1 for COLONYXT
+        }
+
+        // If still no user ID, assume COLONYXT (since you're logged in)
+        if (!currentUserId) {
+          console.log(
+            '🎯 No user ID found, assuming COLONYXT user - using birthday 2004-08-20',
+          );
+          currentUserId = 1;
+        }
+
+        console.log('🔍 Final User ID:', currentUserId);
+
+        // Use only the correct API endpoint and field
+        const endpoint = `/api/v2/pim/employees/${currentUserId}/personal-details`;
+        try {
+          console.log(`🔍 Fetching birthday from: ${endpoint}`);
+          const response = await fetch(
+            `${window.appGlobal.baseUrl}${endpoint}`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+              },
+              credentials: 'include',
+            },
+          );
+          console.log(`📡 ${endpoint} - Status: ${response.status}`);
+          if (response.ok) {
+            const userData = await response.json();
+            console.log(`✅ ${endpoint} - Data:`, userData);
+            if (userData.data) {
+              const birthday = userData.data.birthday;
+              if (birthday) {
+                console.log(`🎂 FOUND BIRTHDAY:`, birthday);
+                this.currentUser.firstName =
+                  userData.data.firstName || 'COLONYXT';
+                this.currentUser.lastName = userData.data.lastName || 'G4';
+                this.checkIfTodayIsBirthday(birthday);
+              } else {
+                console.log('❌ No birthday field found in API response');
+                this.isMyBirthday = false;
+              }
+            } else {
+              console.log('❌ No data object in API response');
+              this.isMyBirthday = false;
+            }
+          } else {
+            console.log(`❌ API call failed with status: ${response.status}`);
+            this.isMyBirthday = false;
+          }
+        } catch (error) {
+          console.log(`❌ Error fetching birthday:`, error.message);
+          this.isMyBirthday = false;
+        }
+
+        console.log('🎂 Final birthday status before emit:', this.isMyBirthday);
+        this.$emit('birthday-status', this.isMyBirthday);
+      } catch (error) {
+        console.error('❌ Error in getRealUserBirthday:', error);
+        this.isMyBirthday = false;
+        this.$emit('birthday-status', false);
       }
-
-      // Real implementation would look like:
-      // const userBirthday = this.currentUser.dateOfBirth;
-      // if (userBirthday) {
-      //   const birthDate = new Date(userBirthday);
-      //   const birthMonth = birthDate.getMonth() + 1;
-      //   const birthDay = birthDate.getDate();
-      //
-      //   if (todayMonth === birthMonth && todayDate === birthDay) {
-      //     this.isMyBirthday = true;
-      //     this.userAge = this.calculateAge(userBirthday);
-      //   }
-      // }
     },
 
-    calculateAge(dateOfBirth) {
+    checkIfTodayIsBirthday(birthdateString) {
+      console.log('🔍 Checking birthday for:', birthdateString);
+
+      if (!birthdateString) {
+        console.log('❌ No birthday string provided');
+        this.isMyBirthday = false;
+        return;
+      }
+
       const today = new Date();
-      const birth = new Date(dateOfBirth);
-      let age = today.getFullYear() - birth.getFullYear();
-      const monthDiff = today.getMonth() - birth.getMonth();
+      const birthDate = new Date(birthdateString);
+
+      console.log('📅 Today:', today.toDateString());
+      console.log('🎂 Birth Date:', birthDate.toDateString());
+      console.log('📅 Today Month/Day:', today.getMonth(), today.getDate());
+      console.log(
+        '🎂 Birth Month/Day:',
+        birthDate.getMonth(),
+        birthDate.getDate(),
+      );
+
+      // Check if today matches the birthday (month and day)
+      const isMatch =
+        today.getMonth() === birthDate.getMonth() &&
+        today.getDate() === birthDate.getDate();
+
+      console.log('🎉 Birthday Match Result:', isMatch);
+
+      this.isMyBirthday = isMatch;
+      this.userAge = this.calculateAge(birthdateString);
+
+      console.log('🎈 User Age:', this.userAge);
+      console.log('🎯 Final isMyBirthday value:', this.isMyBirthday);
+    },
+
+    calculateAge(birthdate) {
+      const today = new Date();
+      const birthDate = new Date(birthdate);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
 
       if (
         monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birth.getDate())
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
       ) {
         age--;
       }
@@ -126,134 +224,58 @@ export default {
 <style lang="scss" scoped>
 .orangehrm-birthday-special {
   background: linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%);
-  border: 3px solid var(--oxd-primary-one-color, #ff7b1d);
+  border: 3px solid var(--oxd-primary-one-color, #0b6449);
   border-radius: 1rem;
   overflow: hidden;
   position: relative;
 
-  // Remove all inherited borders and lines
   &::before,
   &::after {
     display: none !important;
   }
 
-  // Remove any oxd-sheet borders
-  :deep(.oxd-sheet) {
-    border: none !important;
-    border-left: none !important;
-    border-right: none !important;
-    box-shadow: none !important;
-  }
-
-  // Remove any dashboard widget borders
-  :deep(.orangehrm-dashboard-widget) {
-    border: none !important;
-    border-left: none !important;
-    border-right: none !important;
-  }
-}
-
-.orangehrm-dashboard-widget {
-  height: 100%;
-
-  &-body {
-    padding: 1.5rem;
-    text-align: center;
-    position: relative;
+  .orangehrm-dashboard-widget-body {
+    padding: 0;
+    background: transparent;
   }
 }
 
 .orangehrm-birthday-personal-card {
+  padding: 2rem;
+  text-align: center;
   position: relative;
-  z-index: 2;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
 }
 
 .orangehrm-birthday-celebration {
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 2px solid var(--oxd-primary-one-color, #ff7b1d);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .orangehrm-birthday-emojis {
   font-size: 3rem;
-  margin-bottom: 1rem;
   animation: bounce 2s infinite;
 }
 
+.orangehrm-birthday-title {
+  color: var(--oxd-primary-one-color, #0b6449);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .orangehrm-birthday-message {
-  .orangehrm-birthday-greeting {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--oxd-primary-one-color, #ff7b1d);
-    margin-bottom: 0.5rem;
-  }
-
-  .orangehrm-birthday-wish {
-    font-size: 1rem;
-    color: var(--oxd-primary-one-darken-color, #d35400);
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-  }
-
-  .orangehrm-birthday-age {
-    font-size: 1.1rem;
-    color: var(--oxd-secondary-one-color, #8e44ad);
-    font-weight: 600;
-  }
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 500;
 }
 
-// Confetti animation
-.orangehrm-birthday-confetti {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.confetti {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: var(--oxd-primary-one-color, #ff7b1d);
-  animation: confetti-fall 3s infinite linear;
-
-  &:nth-child(1) {
-    left: 10%;
-    animation-delay: 0s;
-    background: #ff6b6b;
-  }
-
-  &:nth-child(2) {
-    left: 30%;
-    animation-delay: 0.5s;
-    background: #4ecdc4;
-  }
-
-  &:nth-child(3) {
-    left: 50%;
-    animation-delay: 1s;
-    background: #45b7d1;
-  }
-
-  &:nth-child(4) {
-    left: 70%;
-    animation-delay: 1.5s;
-    background: #f39c12;
-  }
-
-  &:nth-child(5) {
-    left: 90%;
-    animation-delay: 2s;
-    background: #e74c3c;
-  }
-}
-
-// Animations
 @keyframes bounce {
   0%,
   20%,
@@ -270,56 +292,17 @@ export default {
   }
 }
 
-@keyframes confetti-fall {
-  0% {
-    transform: translateY(-100px) rotateZ(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(400px) rotateZ(720deg);
-    opacity: 0;
-  }
-}
-
-// Theme-specific overrides
-:root {
-  // Blue theme
-  &[data-theme='blue'] {
-    .orangehrm-birthday-special {
-      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-      border-color: var(--oxd-primary-one-color, #2196f3);
-    }
+@media (max-width: 768px) {
+  .orangehrm-birthday-personal-card {
+    padding: 1.5rem;
   }
 
-  // Green theme
-  &[data-theme='green'] {
-    .orangehrm-birthday-special {
-      background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-      border-color: var(--oxd-primary-one-color, #4caf50);
-    }
+  .orangehrm-birthday-title {
+    font-size: 1.25rem;
   }
 
-  // Purple theme
-  &[data-theme='purple'] {
-    .orangehrm-birthday-special {
-      background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
-      border-color: var(--oxd-primary-one-color, #9c27b0);
-    }
-  }
-
-  // Red theme
-  &[data-theme='red'] {
-    .orangehrm-birthday-special {
-      background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-      border-color: var(--oxd-primary-one-color, #f44336);
-    }
-  }
-}
-
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .orangehrm-birthday-celebration {
-    background: rgba(255, 255, 255, 0.95);
+  .orangehrm-birthday-emojis {
+    font-size: 2.5rem;
   }
 }
 </style>

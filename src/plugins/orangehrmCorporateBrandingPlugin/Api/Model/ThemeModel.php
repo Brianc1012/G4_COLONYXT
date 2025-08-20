@@ -1,6 +1,12 @@
 <?php
 /**
- * OrangeHRM is a comprehensive Human Resource Management (HRM) System that captures
+ * OrangeHRM is a     *     @OA\Property(property="variables", type="object",
+     *         @OA\Property(property="primaryColor", type="string", example="#0b6449"),
+     *         @OA\Property(property="primaryFontColor", type="string", example="#FFFFFF"),
+     *         @OA\Property(property="secondaryColor", type="string", example="#123524"),
+     *         @OA\Property(property="secondaryFontColor", type="string", example="#FFFFFF"),
+     *         @OA\Property(property="primaryGradientStartColor", type="string", example="#16404D"),
+     *         @OA\Property(property="primaryGradientEndColor", type="string", example="#3D8D7A"),hensive Human Resource Management (HRM) System that captures
  * all the essential functionalities required for any enterprise.
  * Copyright (C) 2006 OrangeHRM Inc., http://www.orangehrm.com
  *

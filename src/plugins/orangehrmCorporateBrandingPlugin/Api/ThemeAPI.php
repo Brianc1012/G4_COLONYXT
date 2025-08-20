@@ -115,12 +115,12 @@ class ThemeAPI extends Endpoint implements ResourceEndpoint
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="variables", type="object",
-     *                 @OA\Property(property="primaryColor", type="string", example="#FF7B1D"),
+     *                 @OA\Property(property="primaryColor", type="string", example="#0b6449"),
      *                 @OA\Property(property="primaryFontColor", type="string", example="#FFFFFF"),
-     *                 @OA\Property(property="secondaryColor", type="string", example="#76BC21"),
+     *                 @OA\Property(property="secondaryColor", type="string", example="#123524"),
      *                 @OA\Property(property="secondaryFontColor", type="string", example="#FFFFFF"),
-     *                 @OA\Property(property="primaryGradientStartColor", type="string", example="#FF920B"),
-     *                 @OA\Property(property="primaryGradientEndColor", type="string", example="#F35C17"),
+     *                 @OA\Property(property="primaryGradientStartColor", type="string", example="#16404D"),
+     *                 @OA\Property(property="primaryGradientEndColor", type="string", example="#3D8D7A"),
      *                 required={"primaryColor", "primaryFontColor", "secondaryColor", "secondaryFontColor", "primaryGradientStartColor", "primaryGradientEndColor"}
      *             ),
      *             @OA\Property(property="showSocialMediaImages", type="boolean", example=true),

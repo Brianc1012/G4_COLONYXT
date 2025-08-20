@@ -4,6 +4,7 @@ On Powershell Terminal:
     cd src/client
     npm install -g yarn
     yarn install
+    yarn lint:fix
     yarn dev
 
 On browser:

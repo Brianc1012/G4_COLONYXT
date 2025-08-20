@@ -101,6 +101,27 @@
         display-type="secondary"
         @click="onClickAdd"
       />
+
+      <!-- EXPORT DROPDOWN -->
+      <div ref="exportDropdown" class="export-dropdown-container">
+        <oxd-button
+          display-type="success"
+          :label="'Export'"
+          icon-name="download"
+          :loading="isExporting"
+          @click="toggleExportDropdown"
+        />
+        <div v-if="showExportDropdown" class="export-dropdown-menu">
+          <div class="export-dropdown-item" @click="onClickExport('csv')">
+            <oxd-icon name="file-text" />
+            <span>Export as CSV</span>
+          </div>
+          <div class="export-dropdown-item" @click="onClickExport('pdf')">
+            <oxd-icon name="file-pdf" />
+            <span>Export as PDF</span>
+          </div>
+        </div>
+      </div>
     </div>
     <table-header :total="total" :loading="isLoading" />
     <div class="orangehrm-container">
@@ -126,6 +147,8 @@
 
 <script>
 import {ref, computed} from 'vue';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {navigate} from '@/core/util/helper/navigation';
 import useSort from '@ohrm/core/util/composable/useSort';
 import {APIService} from '@/core/util/services/api.service';
@@ -281,6 +304,8 @@ export default {
   },
   data() {
     return {
+      isExporting: false,
+      showExportDropdown: false,
       headers: [
         {
           name: 'referenceId',
@@ -372,7 +397,165 @@ export default {
     };
   },
 
+  mounted() {
+    // Close dropdown when clicking outside
+    document.addEventListener('click', this.handleClickOutside);
+  },
+
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
+  },
+
   methods: {
+    toggleExportDropdown() {
+      if (this.isExporting) return; // Don't open dropdown when exporting
+      this.showExportDropdown = !this.showExportDropdown;
+    },
+
+    handleClickOutside(event) {
+      if (
+        this.$refs.exportDropdown &&
+        !this.$refs.exportDropdown.contains(event.target)
+      ) {
+        this.showExportDropdown = false;
+      }
+    },
+
+    async onClickExport(format = 'csv') {
+      this.showExportDropdown = false; // Close dropdown
+      this.isExporting = true;
+
+      try {
+        if (!this.items?.data || this.items.data.length === 0) {
+          this.$toast.error({
+            title: 'Error',
+            message: 'No claims to export',
+          });
+          return;
+        }
+
+        if (format === 'csv') {
+          this.downloadCSV(this.items.data);
+        } else if (format === 'pdf') {
+          this.downloadPDF(this.items.data);
+        }
+
+        this.$toast.success({
+          title: 'Success',
+          message: `${
+            this.items.data.length
+          } claims exported as ${format.toUpperCase()} successfully`,
+        });
+      } catch (error) {
+        console.error('Export error:', error);
+        this.$toast.error({
+          title: 'Error',
+          message: 'Failed to export claims',
+        });
+      } finally {
+        this.isExporting = false;
+      }
+    },
+
+    downloadCSV(claims) {
+      const headers = [
+        'Reference ID',
+        'Employee Name',
+        'Event Name',
+        'Description',
+        'Currency',
+        'Submitted Date',
+        'Status',
+        'Amount',
+      ];
+
+      const rows = claims.map((claim) => [
+        claim.referenceId || '',
+        claim.employee || '',
+        claim.eventName || '',
+        claim.description || '',
+        claim.currency || '',
+        claim.submittedDate || '',
+        claim.status || '',
+        claim.amount || '',
+      ]);
+
+      const csvContent = [headers, ...rows]
+        .map((row) => row.map((field) => `"${field}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `employee_claims_${
+        new Date().toISOString().split('T')[0]
+      }.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    },
+
+    downloadPDF(claims) {
+      const doc = new jsPDF();
+
+      // Add title
+      doc.setFontSize(18);
+      doc.text('Employee Claims Report', 14, 22);
+
+      // Add date
+      doc.setFontSize(12);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
+      doc.text(`Total Claims: ${claims.length}`, 14, 42);
+
+      // Prepare table data
+      const headers = [
+        'Reference ID',
+        'Employee Name',
+        'Event Name',
+        'Description',
+        'Currency',
+        'Submitted Date',
+        'Status',
+        'Amount',
+      ];
+
+      const data = claims.map((claim) => [
+        claim.referenceId || '',
+        claim.employee || '',
+        claim.eventName || '',
+        claim.description || '',
+        claim.currency || '',
+        claim.submittedDate || '',
+        claim.status || '',
+        claim.amount || '',
+      ]);
+
+      // Add table using autoTable function
+      autoTable(doc, {
+        head: [headers],
+        body: data,
+        startY: 50,
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+        },
+        headStyles: {
+          fillColor: [41, 128, 185],
+          textColor: 255,
+          fontStyle: 'bold',
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+        },
+        margin: {top: 50},
+      });
+
+      // Save the PDF
+      doc.save(`employee_claims_${new Date().toISOString().split('T')[0]}.pdf`);
+    },
+
     async resetDataTable() {
       this.checkedItems = [];
       await this.execQuery();
@@ -393,3 +576,59 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.orangehrm-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.export-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.export-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #d6d6d6;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 180px;
+  margin-top: 4px;
+}
+
+.export-dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.export-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.export-dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.export-dropdown-item span {
+  margin-left: 8px;
+  color: #333;
+}
+
+.export-dropdown-item oxd-icon {
+  color: #666;
+  width: 16px;
+  height: 16px;
+}
+</style>
