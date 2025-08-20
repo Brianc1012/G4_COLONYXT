@@ -19,12 +19,14 @@
 
 <template>
   <oxd-grid class="orangehrm-dashboard-grid" :cols="3">
-    <!-- Birthday Widget - Added at the top -->
+    <!-- Birthday Widget - Shows when user has birthday today -->
     <oxd-grid-item
-      v-if="isBirthdayToday"
+      v-if="showBirthdayWidget"
       class="orangehrm-dashboard-widget orangehrm-birthday-widget-container"
     >
-      <birthday-greetings-widget></birthday-greetings-widget>
+      <birthday-greetings-widget
+        @birthday-status="handleBirthdayStatus"
+      ></birthday-greetings-widget>
     </oxd-grid-item>
 
     <oxd-grid-item
@@ -99,19 +101,21 @@ export default {
     'offboarding-analytics-widget': OffboardingAnalyticsWidget,
   },
 
-  computed: {
-    isBirthdayToday() {
-      const today = new Date();
-      const todayMonth = today.getMonth() + 1;
-      const todayDate = today.getDate();
-
-      // Demo: Show birthday widget on August 10th //replace this with fetching birthday //nakakapagpabagabag
-      return todayMonth === 8 && todayDate === 18;
-    },
+  data() {
+    return {
+      showBirthdayWidget: true,
+    };
   },
+
   mounted() {
     const http = new APIService(window.appGlobal.baseUrl, '/events/push');
     http.create();
+  },
+
+  methods: {
+    handleBirthdayStatus(isBirthday) {
+      this.showBirthdayWidget = isBirthday;
+    },
   },
 };
 </script>
