@@ -1,51 +1,138 @@
-On Powershell Terminal:
+Team Setup Guide (Windows + optional Linux/macOS)
+================================================
+
+This guide helps your teammate set up the project and the built‑in Assistant end‑to‑end.
+
+1) Prerequisites
+----------------
+Windows 10/11 with XAMPP (PHP 7.4), or Linux/macOS with PHP 7.4+ and MySQL 5.7/8.0.
+
+- Git
+- PHP 7.4 with required extensions (see below)
+- Composer (https://getcomposer.org/) in PATH
+- Node.js LTS (18+) and npm
+- Yarn (we install it below if missing)
+
+php.ini requirements (enable and restart Apache/MySQL after changes):
+    extension=curl
+    extension=xml
+    extension=zip
+    extension=intl
+    extension=gd   (or extension=gd2)
+    extension=ldap
+    extension=openssl
+
+For XAMPP on Windows: Edit C:\xampp\php\php.ini, uncomment the above, then restart Apache from XAMPP Control Panel.
+
+
+2) Clone the repository (Windows PowerShell)
+-------------------------------------------
+Open PowerShell and run:
     cd C:\xampp\htdocs
     git clone --branch joel https://github.com/Brianc1012/G4_COLONYXT.git colonyxt
-    cd src/client
+
+Project path will be: C:\xampp\htdocs\colonyxt
+
+
+3) Backend dependencies (Composer)
+----------------------------------
+Install PHP dependencies (from the project src/ directory):
+    cd C:\xampp\htdocs\colonyxt\src
+    composer install
+
+If Composer isn’t recognized, install it and re-open the terminal.
+
+
+4) Frontend dependencies (Yarn)
+-------------------------------
+Install and run the client (use dev while developing, or build for production):
+    cd C:\xampp\htdocs\colonyxt\src\client
     npm install -g yarn
     yarn install
     yarn lint:fix
-    yarn dev
+    yarn dev    (for development)
 
-On browser:
+Alternatively, to build production assets:
+    yarn build
+
+Note: The Assistant chat UI is server-rendered and doesn’t require the dev server to be running, but other UI parts may.
+
+
+5) Apache configuration (Windows/XAMPP)
+---------------------------------------
+- Ensure Apache is running and http://localhost/ serves C:\xampp\htdocs.
+- Optional but recommended: enable mod_rewrite in Apache. In XAMPP, this is enabled by default; if disabled, enable it and restart Apache.
+
+
+6) Writable directories and cache
+---------------------------------
+Windows: No extra steps usually needed.
+
+Linux/macOS: Ensure the web user (www-data/apache/_www) can write to these paths:
+    chmod -R 775 src/cache src/log lib/confs
+    chown -R <web-user>:<web-group> src/cache src/log lib/confs
+
+If you encounter stale templates/UI issues after pulling updates, clear the app cache by deleting the contents of src/cache/ then refresh the browser.
+
+
+7) Run the Installer
+--------------------
+Open in your browser:
     http://localhost/colonyxt/installer
 
------------------------------------------------------------------
+Use these example values (customize as needed):
+    Database Host Name: localhost
+    Database Host Port: 3306
+    Database Name: orangehrm_db
+    Previledged Database Username: root
+    Previledged Database Password: (leave blank if none)
 
-php.ini requirements:
-extension=curl
-extension=xml
-extension=zip
-extension=intl
-extension=gd or extension=gd2
-extension=ldap
-extension=openssl
+    OrangeHRM Database Username: Admin
+    OrangeHRM Database Password: ColonyxtAdmin123.
 
------------------------------------------------------------------
+    Organization Name: Colonyxt
+    Country: Philippines
+    Language: en_US
+    Timezone Group: Asia
+    Timezone: Asia/Manila
 
-Database Host Name: localhost
-Database Host Port: 3306
-Database Name: orangehrm_db                         
-Previledged Database Username: root
-Previledged Database Password:
-OrangeHRM Database Username: Admin                  
-OrangeHRM Database Password: ColonyxtAdmin123.      
+    Employee First Name: Dexter            // customizable
+    Employee Last Name: Morgan             // customizable
+    Email: bus.finance.15@gmail.com        // customizable
+    Contact Number:                        // customizable
+    System Admin Username: Admin
+    System Admin Password: ColonyxtAdmin123.
+    Register: no
 
-Organization Name: Colonyxt
-Country: Philippines
-Language: en_US
-Timezone Group: Asia
-Timezone: Asia/Manila
-
-Employee First Name: Dexter                         //customizable
-Employee Last Name: Morgan                          //customizable
-Email: bus.finance.15@gmail.com                     //customizable
-Contact Number:                                     //customizable
-System Admin Username: Admin                        
-System Admin Password: ColonyxtAdmin123.            
-Register: no
-
------------------------------------------------------------------
-
-On browser:
+After installation, log in at:
     http://localhost/colonyxt/web/index.php/auth/login
+
+
+8) Verifying the Assistant
+--------------------------
+- Sign in as the system admin (or any user).
+- Click the floating Assistant button (bottom-right). You should see an initial greeting if the chat is empty.
+- Click “Clear” and confirm the greeting appears again right after clearing.
+- Try sample queries:
+    "What is my name?"
+    "When is my birthday?"
+    "Show my leave balance"
+    "How many hours did I work this week?"
+
+If any value isn’t defined for the user profile, the Assistant will say it’s not defined and tell you where to add it.
+
+
+9) Troubleshooting
+------------------
+- Blank page or PHP errors: Re-check php.ini extensions and restart Apache.
+- Composer autoload issues: Run "composer install" inside src/ and re-try.
+- Frontend styling issues: If you changed client code, run "yarn dev" or "yarn build" in src/client.
+- Assistant greeting not showing: Hard-refresh (Ctrl+F5). If still missing, delete contents of src/cache/ and refresh.
+- Database connection errors in installer: Verify MySQL is running, port is 3306, and credentials are correct.
+- 404s under /web/: Use the full path http://localhost/colonyxt/web/index.php/… or enable Apache mod_rewrite.
+
+
+10) Notes
+---------
+- Do not commit lib/confs/Conf.php with live credentials.
+- Keep PHP at 7.4 for compatibility with this build; newer versions may require code updates.

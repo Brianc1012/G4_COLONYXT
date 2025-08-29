@@ -56,6 +56,113 @@
         publicPath: "{{ publicPath }}",
       };
   </script>
+  <script type="text/javascript">
+    (function(){
+      try {
+        var isAdmin = {{ user.userRoleId == 1 ? 'true' : 'false' }};
+        if (isAdmin) return; // show only for non-admin
+        var btn = document.createElement('div');
+        btn.id = 'ohrm-assistant-toggle';
+        btn.style.cssText = 'position:fixed;right:16px;bottom:16px;background:#ff7f00;color:#fff;padding:10px 12px;border-radius:20px;cursor:pointer;z-index:9999;font:500 14px/1 sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.2)';
+        btn.textContent = 'Assistant';
+        var panel = document.createElement('div');
+        panel.id = 'ohrm-assistant-panel';
+  panel.style.cssText = 'position:fixed;right:16px;bottom:64px;width:360px;max-height:60vh;background:#fff;border:1px solid #ddd;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.2);display:none;flex-direction:column;overflow:hidden;z-index:9999';
+        panel.innerHTML = ''+
+          '<div style="display:flex;align-items:center;justify-content:space-between;background:#ff7f00;color:#fff;padding:8px 12px;font:600 14px/1 sans-serif">'
+            + '<span>Assistant</span>'
+            + '<div>'
+              + '<button id="ohrm-assistant-clear" title="Clear chat" style="border:0;background:rgba(255,255,255,.2);color:#fff;padding:4px 8px;border-radius:4px;margin-right:6px;cursor:pointer;font:600 12px">Clear</button>'
+            + '</div>'
+          + '</div>'
+          + '<div id="ohrm-assistant-log" style="padding:10px;height:280px;overflow:auto;font:13px/1.5 sans-serif;background:#fafafa"></div>'
+          + '<div style="display:flex;border-top:1px solid #eee"><input id="ohrm-assistant-input" placeholder="Try: What is my name? • When is my birthday? • Show my leave balance" style="flex:1;border:0;padding:10px;outline:none;font:13px sans-serif"/><button id="ohrm-assistant-send" style="border:0;background:#ff7f00;color:#fff;padding:0 12px;margin:8px;border-radius:8px;cursor:pointer;font:600 13px">Send</button></div>';
+  function append(role, text){
+          var log = document.getElementById('ohrm-assistant-log');
+          var row = document.createElement('div');
+          row.style.margin = '8px 0';
+          var bubble = document.createElement('div');
+          var isYou = role === 'You';
+          bubble.style.cssText = 'display:inline-block;max-width:80%;padding:8px 10px;border-radius:10px;white-space:pre-wrap;word-break:break-word;';
+          bubble.style.background = isYou ? '#e7f0ff' : '#fff';
+          bubble.style.border = isYou ? '1px solid #c7dcff' : '1px solid #eee';
+          bubble.style.boxShadow = '0 1px 2px rgba(0,0,0,0.04)';
+          bubble.innerHTML = '<div style="font-weight:600;color:#666;margin-bottom:2px">'+role+'</div>'+
+                              '<div style="color:#222">'+ text +'</div>';
+          row.style.textAlign = isYou ? 'right' : 'left';
+          if (isYou) { bubble.style.borderTopRightRadius = '4px'; } else { bubble.style.borderTopLeftRadius = '4px'; }
+          row.appendChild(bubble);
+          log.appendChild(row); log.scrollTop = log.scrollHeight;
+        }
+        function greet(){
+          append('Assistant', 'Hello! I’m your HR assistant. I can help with your name, birthday, job title, leave balance, and timesheets. Try asking: "What is my name?", "When is my birthday?", or "Show my leave balance".');
+        }
+        function greetIfEmpty(){
+          var log = document.getElementById('ohrm-assistant-log');
+          if (!log) return;
+          var empty = !log.children || log.children.length === 0 || (log.innerText||'').trim() === '';
+          if (empty) greet();
+        }
+        function clearLog(){
+          var log = document.getElementById('ohrm-assistant-log');
+          if (log) log.innerHTML = '';
+          greet();
+        }
+        function send(){
+          var inp = document.getElementById('ohrm-assistant-input');
+          var msg = (inp.value||'').trim(); if(!msg) return; append('You', msg); inp.value='';
+          fetch(window.appGlobal.baseUrl + '/api/v2/assistant/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type':'application/json',
+              'Accept':'application/json',
+              'X-Requested-With':'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({message: msg})
+          }).then(function(r){
+            var ct = r.headers.get('content-type')||'';
+            if (!ct.includes('application/json')) return r.text().then(function(t){ return { __raw: t }; });
+            return r.json();
+          }).then(function(j){
+            var reply = null;
+            if (j) {
+              if (j.reply) {
+                reply = j.reply;
+              } else if (j.data) {
+                if (j.data.reply) {
+                  reply = j.data.reply;
+                } else if (Array.isArray(j.data) && j.data[0] && j.data[0].reply) {
+                  reply = j.data[0].reply;
+                } else if (j.data.data && j.data.data.reply) {
+                  reply = j.data.data.reply;
+                }
+              }
+              if (!reply && j.meta && j.meta.message) {
+                reply = j.meta.message;
+              }
+            }
+            var text = reply || (j && j.__raw) || 'No response';
+            append('Assistant', text);
+          }).catch(function(){ append('Assistant','Error contacting assistant.'); });
+        }
+        btn.addEventListener('click', function(){
+          var opening = panel.style.display === 'none';
+          panel.style.display = opening ? 'flex' : 'none';
+          if (opening) greetIfEmpty();
+        });
+        document.addEventListener('keydown', function(e){ if(e.key==='Escape' && panel.style.display==='flex'){ panel.style.display='none'; }});
+        setTimeout(function(){
+          document.body.appendChild(btn);
+          document.body.appendChild(panel);
+          // Optionally greet on first open; handled by greetIfEmpty() when the panel is opened
+          panel.querySelector('#ohrm-assistant-send').addEventListener('click', send);
+          panel.querySelector('#ohrm-assistant-input').addEventListener('keydown', function(e){ if(e.key==='Enter'){ send(); }});
+          panel.querySelector('#ohrm-assistant-clear').addEventListener('click', clearLog);
+        }, 0);
+      } catch(e) { /* noop */ }
+    })();
+  </script>
   <script src="{{ publicPath }}/dist/js/chunk-vendors.js?v={{ assetsVersion }}"></script>
   <script src="{{ publicPath }}/dist/js/app.js?v={{ assetsVersion }}"></script>
 {% endblock %}

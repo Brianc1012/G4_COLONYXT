@@ -60,6 +60,7 @@
             "OrangeHRM\\ORM\\": "./lib/orm",
             "OrangeHRM\\Framework\\": "./lib/framework",
             "OrangeHRM\\Config\\": "./lib/config",
+            "OrangeHRM\\Assistant\\": "./plugins/orangehrmAssistantPlugin",
             "OrangeHRM\\Admin\\": "./plugins/orangehrmAdminPlugin",
             "OrangeHRM\\Attendance\\": "./plugins/orangehrmAttendancePlugin",
             "OrangeHRM\\Authentication\\": "./plugins/orangehrmAuthenticationPlugin",

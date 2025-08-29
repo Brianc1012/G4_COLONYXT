@@ -1,0 +1,123 @@
+# Minimal default intents. Extend safely.
+leave_balance:
+  - leave balance
+  - how many leave days
+  - leave days left
+  - my leave balance
+  - remaining leave
+  - pto balance
+  - vacation days left
+my_leave_status:
+  - status of my leave
+  - my leave requests status
+  - recent leave status
+  - latest leave request
+  
+timesheet_this_week:
+  - timesheet for this week
+  - hours this week
+  - show my timesheet
+  - this week timesheet
+  - how many hours did i work this week
+  - hours logged this week
+  - total hours this week
+
+my_info_summary:
+  - my job title
+  - my department
+  - who is my manager
+  - my employee id
+  - my birthday
+  - birthdate
+  - date of birth
+  - dob
+  - when is my birthday
+  - what is my birthdate
+  - what is my date of birth
+
+my_identity:
+  - my username
+  - what's my username
+  - who am i
+  - my first name
+  - my last name
+  - my full name
+  - what is my name
+  - what's my name
+  - my name
+  - tell me my name
+  - whoami
+
+performance_help:
+  - performance help
+  - how performance works
+  - how to view performance review
+
+dashboard_help:
+  - dashboard help
+  - how to use dashboard
+  - widgets on dashboard
+
+directory_help:
+  - directory help
+  - search directory
+  - find an employee
+
+claim_help:
+  - claim help
+  - how to submit claim
+  - how to view my claims
+  - how to claim
+  - how to file a claim
+  - submit a claim
+  - create a claim
+  - claim submission
+
+buzz_help:
+  - buzz help
+  - post on buzz
+  - how to use buzz
+  - how to post on buzz
+  - share on buzz
+  - buzz post
+  - upload to buzz
+
+time_help:
+  - time help
+  - timesheet help
+  - how to fill timesheet
+  - attendance help
+  - how to attendance
+  - punch in
+  - punch out
+  - clock in
+  - clock out
+
+attendance_help:
+  - attendance help
+  - how to attendance
+  - punch in
+  - punch out
+  - clock in
+  - clock out
+
+leave_help:
+  - leave help
+  - how to request leave
+  - apply for leave
+
+apply_leave:
+  - apply for leave
+  - how to apply leave
+
+password_help:
+  - my password
+  - what is my password
+  - password
+  - forgot my password
+  - i forgot my password
+  - reset my password
+  - change my password
+  - how to reset password
+  - how to change password
+  - help with password

@@ -88,6 +88,7 @@ return array(
     'OrangeHRM\\Buzz\\' => array($baseDir . '/plugins/orangehrmBuzzPlugin'),
     'OrangeHRM\\Authentication\\' => array($baseDir . '/plugins/orangehrmAuthenticationPlugin'),
     'OrangeHRM\\Attendance\\' => array($baseDir . '/plugins/orangehrmAttendancePlugin'),
+    'OrangeHRM\\Assistant\\' => array($baseDir . '/plugins/orangehrmAssistantPlugin'),
     'OrangeHRM\\Admin\\' => array($baseDir . '/plugins/orangehrmAdminPlugin'),
     'Nyholm\\Psr7\\' => array($vendorDir . '/nyholm/psr7/src'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),

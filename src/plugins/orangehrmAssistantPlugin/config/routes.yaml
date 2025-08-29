@@ -1,0 +1,6 @@
+apiv2_assistant_chat:
+  path: /api/v2/assistant/chat
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ POST ]
+  defaults:
+    _api: OrangeHRM\Assistant\Api\AssistantChatAPI
