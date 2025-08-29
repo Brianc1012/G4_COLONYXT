@@ -10,12 +10,15 @@ use OrangeHRM\Core\Api\V2\Model\ArrayModel;
 use OrangeHRM\Core\Api\V2\ParameterBag;
 use OrangeHRM\Core\Api\V2\RequestParams;
 use OrangeHRM\Core\Api\V2\Validator\ParamRuleCollection;
+use OrangeHRM\Core\Traits\Auth\AuthUserTrait;
 use OrangeHRM\Core\Traits\UserRoleManagerTrait;
 use OrangeHRM\Dashboard\Service\OffboardingService;
+use OrangeHRM\Entity\Employee;
 
 class OffboardingAnalyticsAPI extends Endpoint implements CollectionEndpoint
 {
     use UserRoleManagerTrait;
+    use AuthUserTrait;
     
     private ?OffboardingService $offboardingService = null;
 
@@ -30,40 +33,66 @@ class OffboardingAnalyticsAPI extends Endpoint implements CollectionEndpoint
     public function getAll(): EndpointCollectionResult
     {
         try {
+            // Check if user has permission to view dashboard analytics
+            $authUser = $this->getAuthUser();
+            if (!$authUser || !$authUser->getEmpNumber()) {
+                // Instead of throwing exception, return empty data for now
+                error_log("OffboardingAnalyticsAPI: No authenticated user");
+                return $this->getEmptyResponse();
+            }
+
+            // Check if user has access to HR data (similar to other dashboard APIs)
+            $accessibleEmpNumbers = $this->getUserRoleManager()->getAccessibleEntityIds(Employee::class);
+            if (empty($accessibleEmpNumbers)) {
+                // If user has no accessible employees, return empty data instead of error
+                error_log("OffboardingAnalyticsAPI: No accessible employees for user");
+                return $this->getEmptyResponse();
+            }
+
+            // Try to get analytics data
             $analytics = $this->getOffboardingService()->getOffboardingAnalytics();
+            
         } catch (\Exception $e) {
-            // Return test data if there's an error
-            $analytics = [
-                'totalOffboarded' => 15,
-                'turnoverRate' => 12.5,
-                'totalActiveEmployees' => 120,
-                'reasonBreakdown' => [
-                    ['reason' => 'Better Job Opportunity', 'count' => 8],
-                    ['reason' => 'Personal Reasons', 'count' => 4],
-                    ['reason' => 'Work-Life Balance', 'count' => 3],
-                ],
-                'recentDepartures' => [
-                    [
-                        'empNumber' => 1,
-                        'firstName' => 'Test',
-                        'lastName' => 'Employee',
-                        'jobTitle' => 'Developer',
-                        'terminationDate' => '2024-08-15',
-                        'reason' => 'Better Job Opportunity'
-                    ]
-                ],
-                'monthlyTrend' => [],
-                'departmentBreakdown' => [],
-                'jobTitleBreakdown' => [],
-                'averageTenureMonths' => 18.5,
-                'bpoMetrics' => [
-                    'alertLevel' => 'good',
-                    'recommendations' => ['Monitor trends', 'Maintain engagement'],
-                    'industryAverage' => 35
-                ]
-            ];
+            // Log the error for debugging
+            error_log("OffboardingAnalyticsAPI Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+            
+            // Return empty response instead of throwing exception
+            return $this->getEmptyResponse();
         }
-        
+
+        return new EndpointCollectionResult(
+            ArrayModel::class,
+            [$analytics],
+            new ParameterBag([])
+        );
+    }
+
+    private function getEmptyResponse(): EndpointCollectionResult
+    {
+        $analytics = [
+            'totalOffboarded' => 0,
+            'turnoverRate' => 0.0,
+            'totalActiveEmployees' => 0,
+            'reasonBreakdown' => [],
+            'recentDepartures' => [],
+            'monthlyTrend' => [],
+            'departmentBreakdown' => [],
+            'jobTitleBreakdown' => [],
+            'averageTenureMonths' => 0.0,
+            'bpoMetrics' => [
+                'alertLevel' => 'good',
+                'recommendations' => ['No data available - please check authentication'],
+                'industryAverage' => 35,
+                'benchmarks' => [
+                    'low' => 25,
+                    'moderate' => 35,
+                    'high' => 50,
+                    'critical' => 50
+                ],
+                'riskFactors' => []
+            ]
+        ];
+
         return new EndpointCollectionResult(
             ArrayModel::class,
             [$analytics],
