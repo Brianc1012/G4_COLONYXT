@@ -393,9 +393,21 @@ class AssistantService
 
     private function outOfScope(): array
     {
-        $username = $this->currentUsername() ?? 'there';
+        // Build a concise capability list from configured intents, with one example each
+        $lines = [];
+        foreach ($this->intents as $intent => $phrases) {
+            $label = ucwords(str_replace('_', ' ', (string)$intent));
+            $example = isset($phrases[0]) ? trim($phrases[0]) : null;
+            if ($example !== null && $example !== '') {
+                $lines[] = sprintf('• %s (e.g., "%s")', $label, $example);
+            } else {
+                $lines[] = sprintf('• %s', $label);
+            }
+        }
+
+        $capabilities = implode('<br>', $lines);
         return [
-            'reply' => sprintf('Hello %s, I can help with Leave, Time, My Info, Performance, Dashboard, Directory, Claim, and Buzz. Try: "Show my leave balance", "This week timesheet", or ask for a specific detail like "my job title".', $username),
+            'reply' => "I am not able to help with that just yet, but were working on expanding what I can do. For now, here are the areas where I can assist:<br>" . $capabilities,
             'intent' => null,
         ];
     }
