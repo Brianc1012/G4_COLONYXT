@@ -12,7 +12,7 @@ class OffboardingDao extends BaseDao
     {
         $qb = $this->createQueryBuilder(EmployeeTerminationRecord::class, 'etr');
         $qb->select($qb->expr()->count('etr.id'))
-            ->where($qb->expr()->between('etr.terminationDate', ':startDate', ':endDate'))
+            ->where($qb->expr()->between('etr.date', ':startDate', ':endDate'))
             ->setParameter('startDate', $startDate)
             ->setParameter('endDate', $endDate);
 
@@ -34,7 +34,7 @@ class OffboardingDao extends BaseDao
         $qb = $this->createQueryBuilder(EmployeeTerminationRecord::class, 'etr');
         $qb->select('tr.name as reason', $qb->expr()->count('etr.id') . ' as count')
             ->leftJoin('etr.terminationReason', 'tr')
-            ->where($qb->expr()->between('etr.terminationDate', ':startDate', ':endDate'))
+            ->where($qb->expr()->between('etr.date', ':startDate', ':endDate'))
             ->groupBy('tr.id')
             ->orderBy('count', 'DESC')
             ->setParameter('startDate', $startDate)
@@ -53,11 +53,11 @@ class OffboardingDao extends BaseDao
     public function getRecentDepartures(int $limit = 5): array
     {
         $qb = $this->createQueryBuilder(EmployeeTerminationRecord::class, 'etr');
-        $qb->select('e.empNumber', 'e.firstName', 'e.lastName', 'jt.jobTitleName as jobTitle', 'etr.terminationDate as terminationDate', 'tr.name as reason')
+        $qb->select('e.empNumber', 'e.firstName', 'e.lastName', 'jt.jobTitleName as jobTitle', 'etr.date as terminationDate', 'tr.name as reason')
             ->join('etr.employee', 'e')
             ->leftJoin('e.jobTitle', 'jt')
             ->leftJoin('etr.terminationReason', 'tr')
-            ->orderBy('etr.terminationDate', 'DESC')
+            ->orderBy('etr.date', 'DESC')
             ->setMaxResults($limit);
 
         $results = $qb->getQuery()->getArrayResult();
@@ -77,8 +77,8 @@ class OffboardingDao extends BaseDao
     public function getMonthlyTerminationTrend(): array
     {
         $qb = $this->createQueryBuilder(EmployeeTerminationRecord::class, 'etr');
-        $qb->select('YEAR(etr.terminationDate) as year', 'MONTH(etr.terminationDate) as month', $qb->expr()->count('etr.id') . ' as count')
-            ->where('etr.terminationDate >= :startDate')
+        $qb->select('YEAR(etr.date) as year', 'MONTH(etr.date) as month', $qb->expr()->count('etr.id') . ' as count')
+            ->where('etr.date >= :startDate')
             ->groupBy('year', 'month')
             ->orderBy('year', 'DESC')
             ->addOrderBy('month', 'DESC')
