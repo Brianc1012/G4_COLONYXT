@@ -147,7 +147,6 @@
 </template>
 
 <script>
-import {APIService} from '@/core/util/services/api.service';
 import BaseWidget from '@/orangehrmDashboardPlugin/components/BaseWidget.vue';
 import {OxdPieChart, CHART_COLORS} from '@ohrm/oxd';
 
@@ -160,10 +159,27 @@ export default {
   },
 
   setup() {
-    const http = new APIService(
-      window.appGlobal.baseUrl,
-      '/api/v2/dashboard/offboarding',
-    );
+    // Use direct fetch for test API since it's not a standard API endpoint
+    const http = {
+      getAll: async () => {
+        // Construct the URL more reliably
+        const baseUrl = window.appGlobal.baseUrl;
+        // Remove index.php and any trailing slash, then add our endpoint
+        const cleanBase = baseUrl.replace('/index.php', '').replace(/\/$/, '');
+        const apiUrl = `${cleanBase}/test_offboarding_api.php`;
+
+        console.log('Fetching from URL:', apiUrl);
+
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return {data: data.data}; // Extract the data array from the response
+      },
+    };
 
     return {
       http,
@@ -264,49 +280,60 @@ export default {
     async loadAnalytics() {
       this.isLoading = true;
 
-      // Use verified database data directly (API has 403 authentication issues)
-      const realDatabaseData = {
-        totalOffboarded: 1, // Mikayla Tandog terminated 2025-08-19
-        turnoverRate: 100.0, // 1 terminated / 1 total = 100%
-        totalActiveEmployees: 0, // No active employees found
-        reasonBreakdown: [{reason: 'Punched a rude client', count: 1}],
-        recentDepartures: [
-          {
-            empNumber: 3,
-            firstName: 'Mikayla',
-            lastName: 'Tandog',
-            jobTitle: 'Customer Service Representative',
-            terminationDate: '2025-08-19',
-            reason: 'Punched a rude client',
-          },
-        ],
-        monthlyTrend: [{period: '2025-08', count: 1}],
-        departmentBreakdown: [],
-        jobTitleBreakdown: [
-          {jobTitle: 'Customer Service Representative', count: 1},
-        ],
-        averageTenureMonths: 12,
-        bpoMetrics: {
-          alertLevel: 'critical',
-          benchmarks: {low: 25, moderate: 35, high: 50, critical: 50},
-          recommendations: [
-            'Implement immediate retention bonuses',
-            'Conduct urgent exit interviews',
-            'Review and adjust compensation packages',
-            'Enhance work-life balance programs',
-            'Improve conflict resolution training',
-            'Launch employee stress management initiatives',
-          ],
-          industryAverage: 35,
-          riskFactors: [
-            'High stress environment',
-            'Customer conflict issues',
-            'Need anger management training',
-          ],
-        },
-      };
+      try {
+        // Use the actual API endpoint
+        const response = await this.http.getAll();
 
-      this.processAnalyticsData(realDatabaseData);
+        if (response.data && response.data.length > 0) {
+          this.processAnalyticsData(response.data[0]);
+        } else {
+          // Fallback data if no API response
+          this.processAnalyticsData({
+            totalOffboarded: 0,
+            turnoverRate: 0,
+            totalActiveEmployees: 0,
+            reasonBreakdown: [],
+            recentDepartures: [],
+            monthlyTrend: [],
+            departmentBreakdown: [],
+            jobTitleBreakdown: [],
+            averageTenureMonths: 0,
+            bpoMetrics: {
+              alertLevel: 'good',
+              benchmarks: {low: 25, moderate: 35, high: 50, critical: 50},
+              recommendations: [],
+              industryAverage: 35,
+              riskFactors: [],
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Error loading offboarding analytics:', error);
+        console.log('BaseURL:', window.appGlobal.baseUrl);
+
+        // Fallback to hardcoded data on error
+
+        // Fallback data in case of API error
+        this.processAnalyticsData({
+          totalOffboarded: 0,
+          turnoverRate: 0,
+          totalActiveEmployees: 0,
+          reasonBreakdown: [],
+          recentDepartures: [],
+          monthlyTrend: [],
+          departmentBreakdown: [],
+          jobTitleBreakdown: [],
+          averageTenureMonths: 0,
+          bpoMetrics: {
+            alertLevel: 'good',
+            benchmarks: {low: 25, moderate: 35, high: 50, critical: 50},
+            recommendations: [],
+            industryAverage: 35,
+            riskFactors: [],
+          },
+        });
+      }
+
       this.isLoading = false;
     },
 
@@ -349,8 +376,8 @@ export default {
       this.reasonDataset = this.analytics.reasonBreakdown.map(
         (item, index) => ({
           label: item.reason,
-          data: item.count,
-          backgroundColor: colors[index % colors.length],
+          value: item.count,
+          color: colors[index % colors.length],
         }),
       );
     },
@@ -631,7 +658,34 @@ export default {
 
 // Chart wrapper styling
 :deep(.offboarding-reason-chart) {
-  height: 200px;
+  height: 300px; // Increased height to accommodate longer labels
+  width: 100%;
+
+  .oxd-pie-chart {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .oxd-pie-chart__legend {
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+
+    .oxd-pie-chart__legend-item {
+      max-width: none; // Allow full text to show
+      white-space: normal; // Allow text wrapping
+      word-break: break-word; // Break long words if needed
+      flex: 0 1 auto; // Allow flexible sizing
+    }
+
+    .oxd-pie-chart__legend-text {
+      font-size: 0.875rem;
+      line-height: 1.4;
+      margin-left: 0.5rem;
+    }
+  }
 }
 
 // Theme-specific overrides
@@ -826,6 +880,309 @@ export default {
 ::v-deep(.orangehrm-dashboard-widget) {
   .orangehrm-widget-body {
     padding: 1.5rem;
+  }
+
+  // Risk Overview Cards
+  .orangehrm-risk-overview {
+    margin-bottom: 2rem;
+  }
+
+  .orangehrm-risk-card {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+
+    &.risk-critical {
+      background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+      border-color: #fc8181;
+
+      .orangehrm-risk-icon {
+        color: #e53e3e;
+      }
+    }
+
+    &.risk-high {
+      background: linear-gradient(135deg, #fffaf0 0%, #fbd38d 100%);
+      border-color: #f6ad55;
+
+      .orangehrm-risk-icon {
+        color: #dd6b20;
+      }
+    }
+
+    &.risk-low {
+      background: linear-gradient(135deg, #f0fff4 0%, #9ae6b4 100%);
+      border-color: #68d391;
+
+      .orangehrm-risk-icon {
+        color: #38a169;
+      }
+    }
+  }
+
+  .orangehrm-risk-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .orangehrm-risk-icon {
+    font-size: 2rem;
+  }
+
+  .orangehrm-risk-count {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .orangehrm-risk-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0;
+    color: #6b7280;
+  }
+
+  // High Risk Employee Alert
+  .orangehrm-high-risk-alert {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border: 2px solid #fc8181;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .orangehrm-alert-title {
+    color: #c53030;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .orangehrm-high-risk-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .orangehrm-high-risk-employee {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+  }
+
+  .orangehrm-employee-info {
+    .orangehrm-employee-name {
+      font-weight: 600;
+      color: #2d3748;
+      margin: 0 0 0.25rem 0;
+    }
+
+    .orangehrm-employee-details {
+      color: #718096;
+      margin: 0;
+      font-size: 0.875rem;
+    }
+  }
+
+  .orangehrm-risk-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .orangehrm-risk-score {
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+
+    &.score-critical {
+      background: #fed7d7;
+      color: #c53030;
+    }
+
+    &.score-high {
+      background: #fbd38d;
+      color: #dd6b20;
+    }
+  }
+
+  .orangehrm-risk-factors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    justify-content: center;
+  }
+
+  .orangehrm-risk-factor {
+    background: #edf2f7;
+    color: #4a5568;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .orangehrm-risk-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .orangehrm-action-btn {
+    font-size: 0.875rem !important;
+    padding: 0.375rem 0.75rem !important;
+  }
+
+  // Risk Trends
+  .orangehrm-risk-trends {
+    margin-bottom: 2rem;
+  }
+
+  .orangehrm-chart-title {
+    margin-bottom: 1rem;
+    color: #495057;
+    font-weight: 600;
+  }
+
+  .orangehrm-trend-chart {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e9ecef;
+  }
+
+  .orangehrm-trend-bars {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    height: 150px;
+    gap: 1rem;
+  }
+
+  .orangehrm-trend-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+
+  .orangehrm-bar-fill {
+    width: 100%;
+    background: #e2e8f0;
+    border-radius: 0.25rem 0.25rem 0 0;
+    transition: all 0.3s ease;
+
+    &.trend-critical {
+      background: linear-gradient(to top, #fc8181, #e53e3e);
+    }
+
+    &.trend-high {
+      background: linear-gradient(to top, #f6ad55, #dd6b20);
+    }
+
+    &.trend-moderate {
+      background: linear-gradient(to top, #fbd38d, #d69e2e);
+    }
+  }
+
+  .orangehrm-trend-label {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  // Predictive Insights
+  .orangehrm-predictive-insights {
+    margin-bottom: 1rem;
+  }
+
+  .orangehrm-insights-title {
+    margin-bottom: 1rem;
+    color: #495057;
+    font-weight: 600;
+  }
+
+  .orangehrm-insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .orangehrm-insight-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+
+    &.insight-critical {
+      background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+      border-color: #fc8181;
+    }
+
+    &.insight-high {
+      background: linear-gradient(135deg, #fffaf0 0%, #fbd38d 100%);
+      border-color: #f6ad55;
+    }
+
+    &.insight-good {
+      background: linear-gradient(135deg, #f0fff4 0%, #9ae6b4 100%);
+      border-color: #68d391;
+    }
+  }
+
+  .orangehrm-insight-icon {
+    font-size: 1.5rem;
+    margin-top: 0.25rem;
+
+    .insight-critical & {
+      color: #e53e3e;
+    }
+
+    .insight-high & {
+      color: #dd6b20;
+    }
+
+    .insight-good & {
+      color: #38a169;
+    }
+  }
+
+  .orangehrm-insight-content {
+    flex: 1;
+  }
+
+  .orangehrm-insight-text {
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: #2d3748;
+  }
+
+  .orangehrm-insight-action {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #718096;
+    font-style: italic;
   }
 }
 </style>
